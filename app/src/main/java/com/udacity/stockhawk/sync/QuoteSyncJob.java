@@ -8,9 +8,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
+import android.widget.Toast;
 
+import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
+import com.udacity.stockhawk.ui.MainActivity;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,7 +60,7 @@ public final class QuoteSyncJob {
             stockCopy.addAll(stockPref);
             String[] stockArray = stockPref.toArray(new String[stockPref.size()]);
 
-            Timber.d(stockCopy.toString());
+            Timber.d("stock array",stockCopy.toString());
 
             if (stockArray.length == 0) {
                 return;
@@ -76,7 +81,7 @@ public final class QuoteSyncJob {
                 StockQuote quote = stock.getQuote();
 
 
-                try{
+                if(quote.getPrice() != null){
                     float price = quote.getPrice().floatValue();
                     float change = quote.getChange().floatValue();
                     float percentChange = quote.getChangeInPercent().floatValue();
@@ -104,12 +109,17 @@ public final class QuoteSyncJob {
                     quoteCV.put(Contract.Quote.COLUMN_HISTORY, historyBuilder.toString());
 
                     quoteCVs.add(quoteCV);
-                }catch (NullPointerException e){
-                    e.printStackTrace();
+                }else {
+
+                    Intent intent = new Intent(MainActivity.UNKNOWN_STOCK_SYMBOL);
+                    intent.putExtra(context.getString(R.string.pref_stocks_key) , symbol);
+                    LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+
+                    PrefUtils.removeStock(context , symbol);
                 }
 
-
             }
+
 
             context.getContentResolver()
                     .bulkInsert(

@@ -1,6 +1,9 @@
 package com.udacity.stockhawk.ui;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -8,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -43,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @BindView(R.id.error)
     TextView error;
     private StockAdapter adapter;
+
+    public static final String UNKNOWN_STOCK_SYMBOL = "unknown-stock-symbol" ;
 
     @Override
     public void onClick(String symbol) {
@@ -89,6 +95,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnectedOrConnecting();
+    }
+
+
+    @Override
+    protected void onResume() {
+        LocalBroadcastManager.getInstance(this).registerReceiver(mUnknownSymbolReciver , new IntentFilter(UNKNOWN_STOCK_SYMBOL));
+        super.onResume();
     }
 
     @Override
@@ -186,4 +199,18 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         return super.onOptionsItemSelected(item);
     }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mUnknownSymbolReciver);
+        super.onPause();
+    }
+
+    private BroadcastReceiver mUnknownSymbolReciver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String unknowStockSymbol = intent.getStringExtra(getString(R.string.pref_stocks_key));
+            Toast.makeText(MainActivity.this , "Unknown stock symbol : " + unknowStockSymbol, Toast.LENGTH_SHORT).show();
+        }
+    };
 }
