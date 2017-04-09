@@ -44,6 +44,7 @@ public class AddStockDialog extends DialogFragment {
                 return true;
             }
         });
+        stock.setContentDescription(getString(R.string.dialog_title));
         builder.setView(custom);
 
         builder.setMessage(getString(R.string.dialog_title));

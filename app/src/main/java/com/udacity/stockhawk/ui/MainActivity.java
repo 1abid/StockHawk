@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         @Override
         public void onReceive(Context context, Intent intent) {
             String unknowStockSymbol = intent.getStringExtra(getString(R.string.pref_stocks_key));
-            Toast.makeText(MainActivity.this , "Unknown stock symbol : " + unknowStockSymbol, Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this , context.getString(R.string.unknow_symbol , unknowStockSymbol), Toast.LENGTH_SHORT).show();
         }
     };
 }
