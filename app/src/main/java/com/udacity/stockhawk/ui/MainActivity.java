@@ -1,12 +1,15 @@
 package com.udacity.stockhawk.ui;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -17,16 +20,40 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.utils.ColorTemplate;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 import com.udacity.stockhawk.sync.QuoteSyncJob;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,13 +73,19 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @SuppressWarnings("WeakerAccess")
     @BindView(R.id.error)
     TextView error;
+
+    @BindView(R.id.chart)
+    BarChart chart;
+
     private StockAdapter adapter;
 
-    public static final String UNKNOWN_STOCK_SYMBOL = "unknown-stock-symbol" ;
+    public static final String UNKNOWN_STOCK_SYMBOL = "unknown-stock-symbol";
 
     @Override
     public void onClick(String symbol) {
         Timber.d("Symbol clicked: %s", symbol);
+
+        loadChartData(symbol);
     }
 
     @Override
@@ -65,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         adapter = new StockAdapter(this, this);
         stockRecyclerView.setAdapter(adapter);
         stockRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
 
         swipeRefreshLayout.setOnRefreshListener(this);
         swipeRefreshLayout.setRefreshing(true);
@@ -87,7 +121,58 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             }
         }).attachToRecyclerView(stockRecyclerView);
 
+        setUpLineChart();
+    }
 
+    private void setUpLineChart() {
+
+        //setting up line chart
+
+        // enable touch gestures
+        chart.setTouchEnabled(true);
+
+        chart.setDragDecelerationFrictionCoef(0.9f);
+
+        // enable scaling and dragging
+        chart.setDragEnabled(true);
+        chart.setScaleEnabled(true);
+        chart.setDrawGridBackground(false);
+        chart.setHighlightPerDragEnabled(true);
+
+        XAxis xAxis = chart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.TOP_INSIDE);
+        xAxis.setTextSize(10f);
+        xAxis.setTextColor(Color.WHITE);
+        xAxis.setDrawAxisLine(false);
+        xAxis.setDrawGridLines(true);
+        xAxis.setTextColor(Color.rgb(255, 192, 56));
+        xAxis.setCenterAxisLabels(true);
+        xAxis.setGranularity(1f); // one hour
+        xAxis.setValueFormatter(new IAxisValueFormatter() {
+
+            private SimpleDateFormat mFormat = new SimpleDateFormat("dd MMM HH:mm");
+
+            @Override
+            public String getFormattedValue(float value, AxisBase axis) {
+
+                long millis = TimeUnit.HOURS.toMillis((long) value);
+                return mFormat.format(new Date(millis));
+            }
+        });
+
+
+        YAxis leftAxis = chart.getAxisLeft();
+        leftAxis.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
+        leftAxis.setTextColor(ColorTemplate.getHoloBlue());
+        leftAxis.setDrawGridLines(true);
+        leftAxis.setGranularityEnabled(true);
+        leftAxis.setAxisMinimum(0f);
+        leftAxis.setAxisMaximum(170f);
+        leftAxis.setYOffset(-9f);
+        leftAxis.setTextColor(Color.rgb(255, 192, 56));
+
+        YAxis rightAxis = chart.getAxisRight();
+        rightAxis.setEnabled(false);
     }
 
     private boolean networkUp() {
@@ -100,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     protected void onResume() {
-        LocalBroadcastManager.getInstance(this).registerReceiver(mUnknownSymbolReciver , new IntentFilter(UNKNOWN_STOCK_SYMBOL));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mUnknownSymbolReciver, new IntentFilter(UNKNOWN_STOCK_SYMBOL));
         super.onResume();
     }
 
@@ -159,7 +244,10 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         if (data.getCount() != 0) {
             error.setVisibility(View.GONE);
         }
+
         adapter.setCursor(data);
+
+
     }
 
 
@@ -206,11 +294,62 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onPause();
     }
 
+    private void loadChartData(String symbol) {
+
+        //now in minute
+        long now = TimeUnit.MILLISECONDS.toHours(System.currentTimeMillis());
+
+        ContentResolver cotentResolver = getContentResolver();
+
+        Uri contentUri = Contract.Quote.URI;
+        contentUri = contentUri.buildUpon().appendPath(symbol).build();
+
+        Cursor c = null ;
+        float price = 0;
+
+        try {
+            c = cotentResolver.query(contentUri,
+                    null
+                    , null
+                    , null,
+                    null);
+
+            if (c != null && c.moveToFirst())
+                price = c.getFloat(c.getColumnIndex(Contract.Quote.COLUMN_PRICE)) ;
+
+        }finally {
+            c.close();
+        }
+
+        List<BarEntry> entries = new ArrayList<BarEntry>();
+        entries.add(new BarEntry(now , price));
+
+
+        // create a dataset and give it a type
+        BarDataSet set1 = new BarDataSet(entries , symbol);
+        set1.setAxisDependency(YAxis.AxisDependency.LEFT);
+        set1.setColor(ColorTemplate.getHoloBlue());
+        set1.setValueTextColor(ColorTemplate.getHoloBlue());
+        set1.setHighLightColor(Color.rgb(244, 117, 117));
+
+        // create a data object with the datasets
+        BarData data = new BarData(set1);
+        data.setValueTextColor(Color.WHITE);
+        data.setValueTextSize(9f);
+        data.setBarWidth(0.9f); // set custom bar width
+        chart.setFitBars(true);
+
+        // set data
+        chart.setData(data);
+        chart.invalidate();
+    }
+
+
     private BroadcastReceiver mUnknownSymbolReciver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String unknowStockSymbol = intent.getStringExtra(getString(R.string.pref_stocks_key));
-            Toast.makeText(MainActivity.this , context.getString(R.string.unknow_symbol , unknowStockSymbol), Toast.LENGTH_SHORT).show();
+            Toast.makeText(MainActivity.this, context.getString(R.string.unknow_symbol, unknowStockSymbol), Toast.LENGTH_SHORT).show();
         }
     };
 }

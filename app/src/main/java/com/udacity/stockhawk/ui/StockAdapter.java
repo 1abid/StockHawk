@@ -3,18 +3,25 @@ package com.udacity.stockhawk.ui;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.data.DataSet;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.udacity.stockhawk.R;
 import com.udacity.stockhawk.data.Contract;
 import com.udacity.stockhawk.data.PrefUtils;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import butterknife.BindView;
@@ -28,6 +35,7 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
     private final DecimalFormat percentageFormat;
     private Cursor cursor;
     private final StockAdapterOnClickHandler clickHandler;
+
 
     StockAdapter(Context context, StockAdapterOnClickHandler clickHandler) {
         this.context = context;
@@ -44,6 +52,7 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
 
     void setCursor(Cursor cursor) {
         this.cursor = cursor;
+
         notifyDataSetChanged();
     }
 
@@ -90,8 +99,8 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
             holder.change.setText(percentage);
         }
 
-
     }
+
 
     @Override
     public int getItemCount() {
@@ -133,6 +142,13 @@ class StockAdapter extends RecyclerView.Adapter<StockAdapter.StockViewHolder> {
 
         }
 
-
     }
+
+    String getFirstSymbol() {
+        if (cursor != null && cursor.moveToFirst())
+            return cursor.getString(cursor.getColumnIndex(Contract.Quote.COLUMN_SYMBOL));
+        else
+            return "";
+    }
+
 }
