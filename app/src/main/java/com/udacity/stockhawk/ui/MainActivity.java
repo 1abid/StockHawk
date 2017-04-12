@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -252,7 +253,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         adapter.setCursor(data);
 
-
+        new loadlazyChart().execute();
     }
 
 
@@ -357,4 +358,35 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             Toast.makeText(MainActivity.this, context.getString(R.string.unknow_symbol, unknowStockSymbol), Toast.LENGTH_SHORT).show();
         }
     };
+
+
+    class loadlazyChart extends AsyncTask<Void , Void , String>{
+
+        @Override
+        protected String doInBackground(Void... params) {
+            Uri contentQuoteUri = Contract.Quote.URI ;
+
+            contentQuoteUri = contentQuoteUri.buildUpon().appendQueryParameter(Contract.Quote.COLUMN_PRICE , "MAX(price)").build();
+
+            Cursor data = getContentResolver().query(contentQuoteUri,null,null,null,null);
+
+            if(data == null){
+                return "";
+            }
+            if(!data.moveToFirst()){
+                data.close();
+                Log.d(getClass().getSimpleName() , "no result");
+                return "";
+            }
+
+            return data.getString(data.getColumnIndex(Contract.Quote.COLUMN_SYMBOL));
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            loadChartData(s);
+        }
+    }
 }
