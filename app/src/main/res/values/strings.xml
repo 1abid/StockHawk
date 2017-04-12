@@ -32,5 +32,11 @@
 
     <string name="toast_stock_added_no_connectivity">Symbol %s added. Will refresh when network available.</string>
     <string name="toast_no_connectivity">Will refresh when network available.</string>
+    <string name="appwidget_text">Stock symbol</string>
+    <string name="add_widget">Add widget</string>
+
+    <!-- Strings related to Widgets -->
+    <string name="title_widget_today">Today\'s Stock Hawk</string>
+    <string name="title_widget_detail">Stock Hawk Detail</string>
 
 </resources>
