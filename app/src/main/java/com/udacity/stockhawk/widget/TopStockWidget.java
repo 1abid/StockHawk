@@ -5,9 +5,12 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.udacity.stockhawk.R;
+import com.udacity.stockhawk.sync.QuoteSyncJob;
 import com.udacity.stockhawk.ui.MainActivity;
 
 /**
@@ -15,40 +18,23 @@ import com.udacity.stockhawk.ui.MainActivity;
  */
 public class TopStockWidget extends AppWidgetProvider {
 
-    static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
-                                int appWidgetId) {
-
-
-    }
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        // There may be multiple widgets active, so update all of them
-        for (int appWidgetId : appWidgetIds) {
-            CharSequence widgetText = context.getString(R.string.appwidget_text);
-            // Construct the RemoteViews object
-            RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.top_stock_widget);
-            views.setTextViewText(R.id.symbol, widgetText);
-
-
-            // Create an Intent to launch MainActivity
-            Intent intent = new Intent(context, MainActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-            views.setOnClickPendingIntent(R.id.widget, pendingIntent);
-
-            // Instruct the widget manager to update the widget
-            appWidgetManager.updateAppWidget(appWidgetId, views);
-        }
+        context.startService(new Intent(context, TopStockWidgetIntentService.class));
     }
 
     @Override
-    public void onEnabled(Context context) {
-        // Enter relevant functionality for when the first widget is created
+    public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager,
+                                          int appWidgetId, Bundle newOptions) {
+        context.startService(new Intent(context, TopStockWidgetIntentService.class));
     }
 
     @Override
-    public void onDisabled(Context context) {
-        // Enter relevant functionality for when the last widget is disabled
+    public void onReceive(Context context, Intent intent) {
+        super.onReceive(context, intent);
+        if(QuoteSyncJob.ACTION_WIDGET_DATA_UPDATE.equals(intent.getAction()))
+            context.startService(new Intent(context , TopStockWidgetIntentService.class));
     }
 }
 

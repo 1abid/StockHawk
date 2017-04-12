@@ -15,6 +15,8 @@ public class StockProvider extends ContentProvider {
 
     private static final int QUOTE = 100;
     private static final int QUOTE_FOR_SYMBOL = 101;
+    private static final int QUOTE_FOR_ID = 201 ;
+    private static final int QUOTE_FOR_MAX = 301 ;
 
     private static final UriMatcher uriMatcher = buildUriMatcher();
 
@@ -24,6 +26,8 @@ public class StockProvider extends ContentProvider {
         UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         matcher.addURI(Contract.AUTHORITY, Contract.PATH_QUOTE, QUOTE);
         matcher.addURI(Contract.AUTHORITY, Contract.PATH_QUOTE_WITH_SYMBOL, QUOTE_FOR_SYMBOL);
+        matcher.addURI(Contract.AUTHORITY , Contract.PATH_QUOTE_WITH_ID , QUOTE_FOR_ID);
+        matcher.addURI(Contract.AUTHORITY , Contract.PATH_QUOTE_FOR_MAX , QUOTE_FOR_MAX);
         return matcher;
     }
 
@@ -65,6 +69,31 @@ public class StockProvider extends ContentProvider {
                 );
 
                 break;
+
+            case QUOTE_FOR_ID:
+                returnCursor = db.query(
+                        Contract.Quote.TABLE_NAME,
+                        projection,
+                        Contract.Quote._ID + " = ?",
+                        new String[]{Contract.Quote.getStockFromUri(uri)},
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+
+            case QUOTE_FOR_MAX:
+                returnCursor = db.query(
+                        Contract.Quote.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+
             default:
                 throw new UnsupportedOperationException("Unknown URI:" + uri);
         }

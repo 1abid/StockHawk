@@ -95,6 +95,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        Bundle b = getIntent().getExtras();
+
+        if(b != null)
+            loadChartData(b.getString(Contract.Quote.COLUMN_SYMBOL));
+
         adapter = new StockAdapter(this, this);
         stockRecyclerView.setAdapter(adapter);
         stockRecyclerView.setLayoutManager(new LinearLayoutManager(this));

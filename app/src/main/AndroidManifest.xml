@@ -40,17 +40,21 @@
             android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE" />
 
+        <!-- Today Widget -->
+
         <receiver android:name=".widget.TopStockWidget"
             android:label="@string/title_widget_today">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.udacity.stockhawk.ACTION_DATA_UPDATED"></action>
+                <action android:name="com.udacity.stockhawk.ACTION_WIDGET_DATA_UPDATED"></action>
             </intent-filter>
 
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/top_stock_widget_info" />
         </receiver>
+
+        <service android:name=".widget.TopStockWidgetIntentService"></service>
     </application>
 
 </manifest>
