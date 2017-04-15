@@ -1,24 +1,8 @@
 <resources>
     <string name="app_name">الأسهم، هوك</string>
 
-    <string name="pref_stocks_initialized_key" translatable="false">initialized</string>
 
     <string name="pref_stocks_key">مخازن</string>
-
-
-    <string name="pref_display_mode_key" translatable="false">displayMode</string>
-    <string name="pref_display_mode_default" translatable="false">@string/pref_display_mode_percentage_key</string>
-
-    <string name="pref_display_mode_absolute_key" translatable="false">absolute</string>
-    <string name="pref_display_mode_percentage_key" translatable="false">percentage</string>
-
-    <string name="default_stocks_yahoo">YHOO</string>
-    <string name="default_stocks_apple">AAPL</string>
-    <string name="default_stocks_microsoft">MSFT</string>
-    <string name="default_stocks_facebook">FB</string>
-
-
-    <string name="action_change_units">@string/pref_display_mode_key</string>
 
 
     <string name="dialog_title">إضافة سهم</string>
@@ -32,5 +16,11 @@
 
     <string name="toast_stock_added_no_connectivity">تمت إضافة %s الرمز. سيتم تحديث عندما الشبكة المتاحة.</string>
     <string name="toast_no_connectivity">سيتم تحديث عندما الشبكة المتاحة.</string>
+    <string name="appwidget_text">رمز السهم</string>
+    <string name="add_widget">إضافة أداة</string>
+
+    <!-- Strings related to Widgets -->
+    <string name="title_widget_today">اليوم هوك الأسهم</string>
+    <string name="title_widget_detail">ستوك هوك، فصل</string>
 
 </resources>

@@ -1,0 +1,52 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/widget_margin"
+    android:id="@+id/widget_list_item">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/listPreferredItemHeight"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="16dp"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingRight="16dp"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:id="@+id/widget">
+
+        <TextView
+            android:id="@+id/widget_stock_symbol"
+            style="@style/StockSymbolTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end">
+
+            <TextView
+                android:id="@+id/widget_stock_price"
+                style="@style/BidPriceTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10sp" />
+
+            <TextView
+                android:id="@+id/widget_stock_change"
+                style="@style/PercentChangeTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/percent_change_pill_green"
+                android:paddingLeft="3dp"
+                android:paddingStart="3dp"
+                android:paddingRight="3dp"
+                android:paddingEnd="3dp"/>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

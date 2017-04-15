@@ -24,6 +24,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.DetailStockActivity"
+            android:screenOrientation="portrait" />
 
         <service
             android:name=".sync.QuoteIntentService"
@@ -42,11 +45,12 @@
 
         <!-- Today Widget -->
 
-        <receiver android:name=".widget.TopStockWidget"
+        <receiver
+            android:name=".widget.TopStockWidget"
             android:label="@string/title_widget_today">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="com.udacity.stockhawk.ACTION_WIDGET_DATA_UPDATED"></action>
+                <action android:name="com.udacity.stockhawk.ACTION_WIDGET_DATA_UPDATED" />
             </intent-filter>
 
             <meta-data
@@ -54,7 +58,25 @@
                 android:resource="@xml/top_stock_widget_info" />
         </receiver>
 
-        <service android:name=".widget.TopStockWidgetIntentService"></service>
+        <service android:name=".widget.TopStockWidgetIntentService" />
+
+        <receiver android:name=".widget.DetailWidgetProvider"
+            android:label="@string/title_widget_detail"
+            android:enabled="@bool/widget_detail_enabled">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.udacity.stockhawk.ACTION_WIDGET_DATA_UPDATED" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/detail_widget_provider_info" />
+        </receiver>
+
+        <service android:name=".widget.DetailWidgetRemoteService"
+            android:enabled="@bool/widget_detail_enabled"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS"></service>
     </application>
 
 </manifest>

@@ -113,7 +113,7 @@ public class TopStockWidgetIntentService extends IntentService {
             isChangeWithPlus = false ;
         }
 
-
+        data.close();
 
         for (int appWidgetId : appWidgetIds) {
             // Find the correct layout based on the widget's width
